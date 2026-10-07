@@ -1,0 +1,6 @@
+php-version = "8.4.0"
+allow-unsupported-php-version = true
+
+[source]
+paths = ["src"]
+includes = ["vendor"]
