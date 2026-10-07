@@ -22,6 +22,18 @@ Mago is ~10-19x faster. PHPStan's cache makes the small Laravel re-run near-inst
 Symfony's large graph it helps less (174s -> 151s). Mago trades memory for speed - it holds
 `vendor/` in memory, so peak RSS runs ~3-5x higher.
 
+## Older PHP: Laravel 8.x on PHP 7.4
+
+Current Laravel needs PHP 8.3+, so this uses **Laravel 8.x** (the last line supporting PHP 7.4):
+PHPStan runs under `php7.4`, Mago targets PHP 7.4 (`php-version = "7.4.0"`; it is a standalone Rust
+binary, so the PHP runtime does not affect it). Median of 3 runs, 24 threads. Not directly
+comparable to the table above - different Laravel version and a smaller `src/` (1084 vs 1707 files).
+
+| Project | Files | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |
+|---------|------:|------|---------|---------:|--------:|--------------:|
+| Laravel 8 (PHP 7.4) | 1084 | PHPStan | 2.3.0 | 15.72 | 1.48 | 328 |
+| Laravel 8 (PHP 7.4) | 1084 | Mago | 1.51.2 | 0.98 | 1.30 | 898 |
+
 ## Run
 
 Needs `php8.4`, `composer`, `git`, `curl`, GNU `time`.
