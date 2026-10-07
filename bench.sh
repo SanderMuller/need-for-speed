@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 TOOLS="$ROOT/tools"
 RESULTS="$ROOT/results"
-RUNS="${RUNS:-1}"
+RUNS="${RUNS:-3}"
 PROJECTS=(laravel symfony)
 # PHPStan phar needs PHP 8.x; prefer php8.4 when the default php is older.
 PHP_BIN="${PHP_BIN:-$(command -v php8.4 || command -v php)}"

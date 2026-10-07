@@ -7,19 +7,19 @@ analyzing Laravel and Symfony `src/`. Inspired by
 
 ## Results
 
-Host `Linux 7.0.0-31-generic`, PHP 8.4.26, both tools pinned to 24 threads, 1 run per cell.
+Host `Linux 7.0.0-31-generic`, PHP 8.4.26, both tools pinned to 24 threads, median of 3 runs.
 PHPStan at level 8; Mago `analyze` with strict toggles (Mago has no numeric levels).
 **Cold** = fresh run; **Hot** = immediate re-run (PHPStan reuses its result cache, Mago keeps none).
 
 | Project | Files | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |
 |---------|------:|------|---------|---------:|--------:|--------------:|
-| Laravel | 1707 | PHPStan | 2.3.0 | 37.00 | 1.84 | 389 |
-| Laravel | 1707 | Mago | 1.51.2 | 2.02 | 1.81 | 2102 |
-| Symfony | 12098 | PHPStan | 2.3.0 | 172.25 | 216.04 | 630 |
-| Symfony | 12098 | Mago | 1.51.2 | 11.39 | 10.02 | 1981 |
+| Laravel | 1707 | PHPStan | 2.3.0 | 33.75 | 1.69 | 389 |
+| Laravel | 1707 | Mago | 1.51.2 | 1.80 | 1.79 | 2102 |
+| Symfony | 12098 | PHPStan | 2.3.0 | 173.80 | 151.19 | 630 |
+| Symfony | 12098 | Mago | 1.51.2 | 17.98 | 10.54 | 1981 |
 
-Mago is ~15-18x faster cold. PHPStan's cache makes the small Laravel re-run near-instant (1.8s),
-but on Symfony's large graph it gives no gain (hot ≈ cold). Mago trades memory for speed - it holds
+Mago is ~10-19x faster. PHPStan's cache makes the small Laravel re-run near-instant (1.7s); on
+Symfony's large graph it helps less (174s -> 151s). Mago trades memory for speed - it holds
 `vendor/` in memory, so peak RSS runs ~3-5x higher.
 
 ## Run
@@ -28,7 +28,7 @@ Needs `php8.4`, `composer`, `git`, `curl`, GNU `time`.
 
 ```bash
 ./setup.sh   # install tools, clone + composer-install both frameworks
-./bench.sh   # benchmark -> results/results.md   (RUNS=3 for medians)
+./bench.sh   # benchmark -> results/results.md   (median of RUNS=3; set RUNS=1 for a quick pass)
 ```
 
 `tools/` and `projects/` are gitignored and recreated by `setup.sh`.
