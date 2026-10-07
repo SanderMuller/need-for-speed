@@ -50,16 +50,19 @@ bench() {
     awk -v s="$med" -v m="$rss_max" 'BEGIN{printf "%.2f %.0f\n", s, m/1024}'
 }
 
+PS_VER=$(php "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+MG_VER=$("$TOOLS/mago" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+
 OUT="$RESULTS/results.md"
 {
     echo "# Results"
     echo
     echo "- Host: \`$(uname -sr)\`, PHP \`$(php -r 'echo PHP_VERSION;')\`"
-    echo "- PHPStan \`$(php "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')\` (level 2), Mago \`$("$TOOLS/mago" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')\` (analyze)"
+    echo "- PHPStan \`$PS_VER\` (level 2), Mago \`$MG_VER\` (analyze)"
     echo "- Runs per cell: $RUNS (median reported). Time in seconds, peak memory in MB."
     echo
-    echo "| Project | Files (src) | Tool | Cold (s) | Hot (s) | Peak mem (MB) |"
-    echo "|---------|------------:|------|---------:|--------:|--------------:|"
+    echo "| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |"
+    echo "|---------|------------:|------|---------|---------:|--------:|--------------:|"
 } > "$OUT"
 
 for proj in "${PROJECTS[@]}"; do
@@ -74,8 +77,8 @@ for proj in "${PROJECTS[@]}"; do
     read -r mg_hot mg_mem_h < <(bench mago hot)
     mg_mem=$(( mg_mem_c > mg_mem_h ? mg_mem_c : mg_mem_h ))
     {
-        echo "| $proj | $files | PHPStan | $ps_cold | $ps_hot | $ps_mem |"
-        echo "| $proj | $files | Mago | $mg_cold | $mg_hot | $mg_mem |"
+        echo "| $proj | $files | PHPStan | $PS_VER | $ps_cold | $ps_hot | $ps_mem |"
+        echo "| $proj | $files | Mago | $MG_VER | $mg_cold | $mg_hot | $mg_mem |"
     } >> "$OUT"
 done
 

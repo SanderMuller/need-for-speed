@@ -22,12 +22,12 @@ Both tools run their static analysis over the framework's `src/` directory:
 - PHPStan `2.3.0` (level 2), Mago `1.51.2` (`analyze`)
 - 1 run per cell. Time in seconds, peak memory in MB.
 
-| Project | Files (src) | Tool | Cold (s) | Hot (s) | Peak mem (MB) |
-|---------|------------:|------|---------:|--------:|--------------:|
-| Laravel | 1707 | PHPStan | 32.26 | 1.40 | 439 |
-| Laravel | 1707 | Mago | 2.15 | 1.83 | 2099 |
-| Symfony | 12098 | PHPStan | 149.89 | 126.00 | 663 |
-| Symfony | 12098 | Mago | 10.68 | 10.14 | 1942 |
+| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |
+|---------|------------:|------|---------|---------:|--------:|--------------:|
+| Laravel | 1707 | PHPStan | 2.3.0 | 32.26 | 1.40 | 439 |
+| Laravel | 1707 | Mago | 1.51.2 | 2.15 | 1.83 | 2099 |
+| Symfony | 12098 | PHPStan | 2.3.0 | 149.89 | 126.00 | 663 |
+| Symfony | 12098 | Mago | 1.51.2 | 10.68 | 10.14 | 1942 |
 
 **Takeaway:** cold, Mago is ~15x faster on Laravel and ~14x on Symfony. PHPStan's result cache
 makes its hot Laravel run very fast (1.4s), but on Symfony the cache helps less (126s). Mago trades
