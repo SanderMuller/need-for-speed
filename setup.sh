@@ -5,6 +5,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 TOOLS="$ROOT/tools"
 PHPSTAN_VERSION="${PHPSTAN_VERSION:-2.3.0}"
+# Frameworks and PHPStan need PHP 8.x; prefer php8.4 when the default php is older.
+PHP_BIN="${PHP_BIN:-$(command -v php8.4 || command -v php)}"
+COMPOSER_BIN="$(command -v composer)"
 
 mkdir -p "$TOOLS" "$ROOT/projects"
 
@@ -23,7 +26,7 @@ clone_project() {
     fi
     echo ">>> composer install: $name"
     (cd "$ROOT/projects/$name" && COMPOSER_MEMORY_LIMIT=-1 \
-        composer install --no-interaction --no-progress --no-scripts --ignore-platform-reqs)
+        "$PHP_BIN" "$COMPOSER_BIN" install --no-interaction --no-progress --no-scripts --ignore-platform-reqs)
     cp "$ROOT/configs/$name/phpstan.neon" "$ROOT/projects/$name/phpstan.neon"
     cp "$ROOT/configs/$name/mago.toml" "$ROOT/projects/$name/mago.toml"
 }

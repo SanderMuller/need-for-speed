@@ -5,8 +5,10 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 TOOLS="$ROOT/tools"
 RESULTS="$ROOT/results"
-RUNS="${RUNS:-1}"
+RUNS="${RUNS:-3}"
 PROJECTS=(laravel symfony)
+# PHPStan phar needs PHP 8.x; prefer php8.4 when the default php is older.
+PHP_BIN="${PHP_BIN:-$(command -v php8.4 || command -v php)}"
 
 mkdir -p "$RESULTS"
 TIME_BIN=/usr/bin/time
@@ -27,7 +29,7 @@ run_once() {
     echo "${elapsed:-0}"
 }
 
-phpstan_cmd() { php "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw; }
+phpstan_cmd() { "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw; }
 mago_cmd() { "$TOOLS/mago" analyze; }
 
 # bench <tool> <mode> : prints "median_seconds peak_mb"
@@ -38,7 +40,7 @@ bench() {
         # cold mode: wipe PHPStan result cache before each run (Mago keeps no cache)
         if [ "$mode" = cold ] && [ "$tool" = phpstan ]; then rm -rf .phpstan-cache; fi
         if [ "$tool" = phpstan ]; then
-            t=$(run_once "$TMP/rss" php "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw)
+            t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw)
         else
             t=$(run_once "$TMP/rss" "$TOOLS/mago" analyze)
         fi
@@ -50,16 +52,16 @@ bench() {
     awk -v s="$med" -v m="$rss_max" 'BEGIN{printf "%.2f %.0f\n", s, m/1024}'
 }
 
-PS_VER=$(php "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+PS_VER=$("$PHP_BIN" "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 MG_VER=$("$TOOLS/mago" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 
 OUT="$RESULTS/results.md"
 {
     echo "# Results"
     echo
-    echo "- Host: \`$(uname -sr)\`, PHP \`$(php -r 'echo PHP_VERSION;')\`"
-    echo "- PHPStan \`$PS_VER\` (level 2), Mago \`$MG_VER\` (analyze)"
-    echo "- Runs per cell: $RUNS (median reported). Time in seconds, peak memory in MB."
+    echo "- Host: \`$(uname -sr)\`, PHP \`$("$PHP_BIN" -r 'echo PHP_VERSION;')\`"
+    echo "- PHPStan \`$PS_VER\` (level 8), Mago \`$MG_VER\` (analyze, strict toggles)"
+    echo "- Both pinned to 24 threads/processes. Runs per cell: $RUNS (median). Time in seconds, peak memory in MB."
     echo
     echo "| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |"
     echo "|---------|------------:|------|---------|---------:|--------:|--------------:|"
