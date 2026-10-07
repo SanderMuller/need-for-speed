@@ -1,0 +1,15 @@
+php-version = "7.4.0"
+allow-unsupported-php-version = true
+threads = 24
+
+[source]
+paths = ["src"]
+includes = ["vendor"]
+
+# Approximate PHPStan level 8 strictness (Mago has no numeric levels).
+[analyzer]
+check-missing-type-hints = true
+check-closure-missing-type-hints = true
+check-arrow-function-missing-type-hints = true
+strict-list-index-checks = true
+strict-array-index-existence = true
