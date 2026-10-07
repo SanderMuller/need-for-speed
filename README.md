@@ -69,5 +69,9 @@ results/results.md  latest results
 
 ## Versions
 
-- PHPStan 2.3.0, level 2
-- Mago 1.51.2, `analyze`
+| Tool | Version | Released | Min PHP to run the tool |
+|------|---------|----------|-------------------------|
+| [PHPStan](https://phpstan.org/) | 2.3.0 | 2026-10-06 | PHP 7.4 (`php: ^7.4\|^8.0`) |
+| [Mago](https://github.com/carthage-software/mago) | 1.51.2 | 2026-10-03 | none - standalone Rust binary, no PHP runtime needed |
+
+PHPStan was run at level 2; Mago with its default `analyze` ruleset.
