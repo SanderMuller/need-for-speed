@@ -80,8 +80,8 @@ OUT="$RESULTS/results.md"
     echo
     echo "- Host: \`$(uname -sr)\`, PHP \`$("$PHP_BIN" -r 'echo PHP_VERSION;')\`"
     echo "- PHPStan \`$PS_VER\` (level 8), Mago \`$MG_VER\` (analyze, strict toggles)"
-    echo "- ECS \`$ES_VER\` (PSR-12): PHP engine (\`check\`) and Go binary (\`check --blink\`)"
-    echo "- PHP-CS-Fixer \`$CF_VER\` (@PSR12)"
+    echo "- ECS \`$ES_VER\` (PER-CS): PHP engine (\`check\`) and Go binary (\`check --blink\`)"
+    echo "- PHP-CS-Fixer \`$CF_VER\` (@PER-CS)"
     echo "- All pinned to 24 threads/processes. Runs per cell: $RUNS (median). Time in seconds, peak memory in MB."
     echo
     echo "| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |"
