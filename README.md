@@ -20,15 +20,15 @@ measured on `Linux 7.0.0-38-generic`, so absolute numbers are not strictly host-
 | Laravel | 8.4 | 1707 | PHPStan | 2.3.0 | 33.75 | 1.69 | 389 |
 | Laravel | 8.4 | 1707 | Mago | 1.53.0 | 1.04 | 1.05 | 2228 |
 | Laravel | 8.4 | 1707 | ECS | 13.3.3 | 9.03 | 9.17 | 68 |
-| Laravel | 8.4 | 1707 | ECS **--blink** | 13.3.3 | 0.78 | 0.71 | 1554 |
+| Laravel | 8.4 | 1707 | ECS --blink | 13.3.3 | **0.78** | **0.71** | 1554 |
 | Laravel | 7.4 | 1084 | PHPStan | 2.3.0 | 15.72 | 1.48 | 328 |
-| Laravel | 7.4 | 1084 | Mago | 1.53.0 | 0.35 | 0.34 | 933 |
+| Laravel | 7.4 | 1084 | Mago | 1.53.0 | **0.35** | **0.34** | 933 |
 | Laravel | 7.4 | 1084 | ECS | 13.3.3 | 5.03 | 5.39 | 60 |
-| Laravel | 7.4 | 1084 | ECS **--blink** | 13.3.3 | 0.45 | 0.45 | 850 |
+| Laravel | 7.4 | 1084 | ECS --blink | 13.3.3 | 0.45 | 0.45 | 850 |
 | Symfony | 8.4 | 12098 | PHPStan | 2.3.0 | 173.80 | 151.19 | 630 |
 | Symfony | 8.4 | 12098 | Mago | 1.53.0 | 4.03 | 4.03 | 1967 |
 | Symfony | 8.4 | 12098 | ECS | 13.3.3 | 102.54 | 50.71 | 159 |
-| Symfony | 8.4 | 12098 | ECS **--blink** | 13.3.3 | 1.33 | 1.40 | 2089 |
+| Symfony | 8.4 | 12098 | ECS --blink | 13.3.3 | **1.33** | **1.40** | 2089 |
 
 Mago is ~30-45x faster than PHPStan. PHPStan's cache makes the small Laravel re-run near-instant (1.7s); on
 Symfony's large graph it helps less (174s -> 151s), while Mago keeps no cache so its cold and hot
