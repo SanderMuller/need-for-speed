@@ -5,14 +5,15 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 TOOLS="$ROOT/tools"
 PHPSTAN_VERSION="${PHPSTAN_VERSION:-2.3.0}"
+MAGO_VERSION="${MAGO_VERSION:-1.53.0}"
 # Frameworks and PHPStan need PHP 8.x; prefer php8.4 when the default php is older.
 PHP_BIN="${PHP_BIN:-$(command -v php8.4 || command -v php)}"
 COMPOSER_BIN="$(command -v composer)"
 
 mkdir -p "$TOOLS" "$ROOT/projects"
 
-echo ">>> Installing Mago"
-curl -sSL https://carthage.software/mago.sh | bash -s -- --install-dir="$TOOLS"
+echo ">>> Installing Mago $MAGO_VERSION"
+curl -sSL https://carthage.software/mago.sh | bash -s -- --install-dir="$TOOLS" --version="$MAGO_VERSION"
 
 echo ">>> Downloading PHPStan $PHPSTAN_VERSION"
 curl -sSL -o "$TOOLS/phpstan.phar" \
