@@ -32,6 +32,7 @@ run_once() {
 phpstan_cmd() { "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw; }
 mago_cmd() { "$TOOLS/mago" analyze; }
 ecs_cmd() { "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --no-progress-bar "$@"; }
+csfixer_cmd() { "$PHP_BIN" "$TOOLS/php-cs-fixer/vendor/bin/php-cs-fixer" check "$@"; }
 
 # bench <tool> <mode> : prints "median_seconds peak_mb"
 bench() {
@@ -41,6 +42,7 @@ bench() {
         # cold mode: wipe the PHP engines' result caches before each run
         # (Mago and ECS `--blink` keep none)
         if [ "$mode" = cold ] && [ "$tool" = phpstan ]; then rm -rf .phpstan-cache; fi
+        if [ "$mode" = cold ] && [ "$tool" = php-cs-fixer ]; then rm -f .php-cs-fixer.cache; fi
         if [ "$tool" = phpstan ]; then
             t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw)
         elif [ "$tool" = mago ]; then
@@ -52,9 +54,12 @@ bench() {
             else
                 t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --no-progress-bar)
             fi
-        else
-            # ecs-blink: the ecs-go Go binary, keeps no cache (cold == hot)
+        elif [ "$tool" = ecs-blink ]; then
+            # the ecs-go Go binary, keeps no cache (cold == hot)
             t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --blink --no-progress-bar --clear-cache)
+        else
+            # php-cs-fixer: cold wiped the cache above, hot reuses .php-cs-fixer.cache
+            t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/php-cs-fixer/vendor/bin/php-cs-fixer" check)
         fi
         times+=("$t")
         r=$(cat "$TMP/rss")
@@ -67,6 +72,7 @@ bench() {
 PS_VER=$("$PHP_BIN" "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 MG_VER=$("$TOOLS/mago" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 ES_VER=$("$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+CF_VER=$("$PHP_BIN" "$TOOLS/php-cs-fixer/vendor/bin/php-cs-fixer" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 
 OUT="$RESULTS/results.md"
 {
@@ -75,6 +81,7 @@ OUT="$RESULTS/results.md"
     echo "- Host: \`$(uname -sr)\`, PHP \`$("$PHP_BIN" -r 'echo PHP_VERSION;')\`"
     echo "- PHPStan \`$PS_VER\` (level 8), Mago \`$MG_VER\` (analyze, strict toggles)"
     echo "- ECS \`$ES_VER\` (PSR-12): PHP engine (\`check\`) and Go binary (\`check --blink\`)"
+    echo "- PHP-CS-Fixer \`$CF_VER\` (@PSR12)"
     echo "- All pinned to 24 threads/processes. Runs per cell: $RUNS (median). Time in seconds, peak memory in MB."
     echo
     echo "| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |"
@@ -100,11 +107,16 @@ for proj in "${PROJECTS[@]}"; do
     read -r eb_cold eb_mem_c < <(bench ecs-blink cold)
     read -r eb_hot eb_mem_h < <(bench ecs-blink hot)
     eb_mem=$(( eb_mem_c > eb_mem_h ? eb_mem_c : eb_mem_h ))
+    echo ">>> $proj: PHP-CS-Fixer"
+    read -r cf_cold cf_mem_c < <(bench php-cs-fixer cold)
+    read -r cf_hot cf_mem_h < <(bench php-cs-fixer hot)
+    cf_mem=$(( cf_mem_c > cf_mem_h ? cf_mem_c : cf_mem_h ))
     {
         echo "| $proj | $files | PHPStan | $PS_VER | $ps_cold | $ps_hot | $ps_mem |"
         echo "| $proj | $files | Mago | $MG_VER | $mg_cold | $mg_hot | $mg_mem |"
         echo "| $proj | $files | ECS | $ES_VER | $es_cold | $es_hot | $es_mem |"
         echo "| $proj | $files | ECS --blink | $ES_VER | $eb_cold | $eb_hot | $eb_mem |"
+        echo "| $proj | $files | PHP-CS-Fixer | $CF_VER | $cf_cold | $cf_hot | $cf_mem |"
     } >> "$OUT"
 done
 

@@ -7,6 +7,7 @@ TOOLS="$ROOT/tools"
 PHPSTAN_VERSION="${PHPSTAN_VERSION:-2.3.0}"
 MAGO_VERSION="${MAGO_VERSION:-1.53.0}"
 ECS_VERSION="${ECS_VERSION:-13.3.3}"
+PHP_CS_FIXER_VERSION="${PHP_CS_FIXER_VERSION:-3.95.27}"
 # Frameworks and PHPStan need PHP 8.x; prefer php8.4 when the default php is older.
 PHP_BIN="${PHP_BIN:-$(command -v php8.4 || command -v php)}"
 COMPOSER_BIN="$(command -v composer)"
@@ -26,6 +27,12 @@ mkdir -p "$TOOLS/ecs"
     "$PHP_BIN" "$COMPOSER_BIN" require "symplify/easy-coding-standard:$ECS_VERSION" \
     --no-interaction --no-progress)
 
+echo ">>> Installing PHP-CS-Fixer $PHP_CS_FIXER_VERSION"
+mkdir -p "$TOOLS/php-cs-fixer"
+(cd "$TOOLS/php-cs-fixer" && COMPOSER_MEMORY_LIMIT=-1 \
+    "$PHP_BIN" "$COMPOSER_BIN" require "friendsofphp/php-cs-fixer:$PHP_CS_FIXER_VERSION" \
+    --no-interaction --no-progress)
+
 clone_project() {
     local name="$1" repo="$2"
     if [ ! -d "$ROOT/projects/$name/.git" ]; then
@@ -38,6 +45,7 @@ clone_project() {
     cp "$ROOT/configs/$name/phpstan.neon" "$ROOT/projects/$name/phpstan.neon"
     cp "$ROOT/configs/$name/mago.toml" "$ROOT/projects/$name/mago.toml"
     cp "$ROOT/configs/$name/ecs.php" "$ROOT/projects/$name/ecs.php"
+    cp "$ROOT/configs/$name/.php-cs-fixer.dist.php" "$ROOT/projects/$name/.php-cs-fixer.dist.php"
 }
 
 clone_project laravel https://github.com/laravel/framework.git
