@@ -31,18 +31,30 @@ run_once() {
 
 phpstan_cmd() { "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw; }
 mago_cmd() { "$TOOLS/mago" analyze; }
+ecs_cmd() { "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --no-progress-bar "$@"; }
 
 # bench <tool> <mode> : prints "median_seconds peak_mb"
 bench() {
     local tool="$1" mode="$2"
     local times=() rss_max=0
     for _ in $(seq "$RUNS"); do
-        # cold mode: wipe PHPStan result cache before each run (Mago keeps no cache)
+        # cold mode: wipe the PHP engines' result caches before each run
+        # (Mago and ECS `--blink` keep none)
         if [ "$mode" = cold ] && [ "$tool" = phpstan ]; then rm -rf .phpstan-cache; fi
         if [ "$tool" = phpstan ]; then
             t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/phpstan.phar" analyse -c phpstan.neon --no-progress --error-format=raw)
-        else
+        elif [ "$tool" = mago ]; then
             t=$(run_once "$TMP/rss" "$TOOLS/mago" analyze)
+        elif [ "$tool" = ecs ]; then
+            # PHP engine: clear the result cache on cold, reuse it on hot
+            if [ "$mode" = cold ]; then
+                t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --no-progress-bar --clear-cache)
+            else
+                t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --no-progress-bar)
+            fi
+        else
+            # ecs-blink: the ecs-go Go binary, keeps no cache (cold == hot)
+            t=$(run_once "$TMP/rss" "$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" check --blink --no-progress-bar --clear-cache)
         fi
         times+=("$t")
         r=$(cat "$TMP/rss")
@@ -54,6 +66,7 @@ bench() {
 
 PS_VER=$("$PHP_BIN" "$TOOLS/phpstan.phar" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 MG_VER=$("$TOOLS/mago" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+ES_VER=$("$PHP_BIN" "$TOOLS/ecs/vendor/bin/ecs" --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
 
 OUT="$RESULTS/results.md"
 {
@@ -61,7 +74,8 @@ OUT="$RESULTS/results.md"
     echo
     echo "- Host: \`$(uname -sr)\`, PHP \`$("$PHP_BIN" -r 'echo PHP_VERSION;')\`"
     echo "- PHPStan \`$PS_VER\` (level 8), Mago \`$MG_VER\` (analyze, strict toggles)"
-    echo "- Both pinned to 24 threads/processes. Runs per cell: $RUNS (median). Time in seconds, peak memory in MB."
+    echo "- ECS \`$ES_VER\` (PSR-12): PHP engine (\`check\`) and Go binary (\`check --blink\`)"
+    echo "- All pinned to 24 threads/processes. Runs per cell: $RUNS (median). Time in seconds, peak memory in MB."
     echo
     echo "| Project | Files (src) | Tool | Version | Cold (s) | Hot (s) | Peak mem (MB) |"
     echo "|---------|------------:|------|---------|---------:|--------:|--------------:|"
@@ -78,9 +92,19 @@ for proj in "${PROJECTS[@]}"; do
     read -r mg_cold mg_mem_c < <(bench mago cold)
     read -r mg_hot mg_mem_h < <(bench mago hot)
     mg_mem=$(( mg_mem_c > mg_mem_h ? mg_mem_c : mg_mem_h ))
+    echo ">>> $proj: ECS (PHP engine)"
+    read -r es_cold es_mem_c < <(bench ecs cold)
+    read -r es_hot es_mem_h < <(bench ecs hot)
+    es_mem=$(( es_mem_c > es_mem_h ? es_mem_c : es_mem_h ))
+    echo ">>> $proj: ECS --blink (Go binary)"
+    read -r eb_cold eb_mem_c < <(bench ecs-blink cold)
+    read -r eb_hot eb_mem_h < <(bench ecs-blink hot)
+    eb_mem=$(( eb_mem_c > eb_mem_h ? eb_mem_c : eb_mem_h ))
     {
         echo "| $proj | $files | PHPStan | $PS_VER | $ps_cold | $ps_hot | $ps_mem |"
         echo "| $proj | $files | Mago | $MG_VER | $mg_cold | $mg_hot | $mg_mem |"
+        echo "| $proj | $files | ECS | $ES_VER | $es_cold | $es_hot | $es_mem |"
+        echo "| $proj | $files | ECS --blink | $ES_VER | $eb_cold | $eb_hot | $eb_mem |"
     } >> "$OUT"
 done
 
