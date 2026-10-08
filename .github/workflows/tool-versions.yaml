@@ -43,5 +43,6 @@ jobs:
 
           check PHPStan phpstan/phpstan PHPSTAN_VERSION
           check Mago carthage-software/mago MAGO_VERSION
+          check ECS ecsphp/ecs ECS_VERSION
 
           exit $fail
