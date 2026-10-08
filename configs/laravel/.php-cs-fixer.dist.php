@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-// @PSR12 ruleset, same target as the ECS rows. 24 processes to match the
+// @PER-CS ruleset, same target as the ECS rows. 24 processes to match the
 // thread count pinned for the other tools.
 $finder = PhpCsFixer\Finder::create()->in(__DIR__ . '/src');
 
 return (new PhpCsFixer\Config())
     ->setParallelConfig(new PhpCsFixer\Runner\Parallel\ParallelConfig(24))
-    ->setRules(['@PSR12' => true])
+    ->setRules(['@PER-CS' => true])
     ->setFinder($finder);
