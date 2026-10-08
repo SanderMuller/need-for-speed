@@ -2,7 +2,7 @@
 
 Speed comparison of PHP code-quality tools on real framework source:
 static analysis with **[PHPStan](https://phpstan.org/)** (PHP) vs **[Mago](https://github.com/carthage-software/mago)** (Rust),
-and coding-standard checks with **[ECS](https://github.com/easy-coding-standard/easy-coding-standard)**
+and coding-standard checks with **[ECS](https://github.com/ecsphp/ecs)**
 in both engines - the PHP engine (`check`) and the bundled Go binary (`check --blink`) -
 plus **[PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer)** (the fixer ECS wraps).
 All run against Laravel and Symfony `src/`. Inspired by
@@ -63,10 +63,10 @@ the small Laravel `src/`.
 The PHP 7.4 rows use **Laravel 8.x** (the last line supporting PHP 7.4; current Laravel needs 8.3+).
 PHPStan runs under `php7.4` and Mago targets 7.4. They are not directly comparable to the 8.4
 rows - different Laravel version and a smaller `src/` (1084 vs 1707 files). Mago is a standalone Rust
-binary, so the PHP runtime does not affect it. ECS `13.3.3` requires PHP 8.x to run, so its 7.4 rows
-check the 7.4-era source with the checker itself running under `php8.4`; only the analyzed code is 7.4.
-PHP-CS-Fixer is the same: it supports PHP 7.4, but its `vendor/` here is installed under `php8.4`
-(Composer locks the platform), so its 7.4 row also runs the checker under `php8.4`.
+binary, so the PHP runtime does not affect it. ECS (`php: >=7.2`) and PHP-CS-Fixer (`php: ^7.4|^8.0`)
+both support old PHP, but their `vendor/` here is installed under `php8.4`, so Composer resolves
+dependencies that need 8.x - hence the 7.4 rows run the checker itself under `php8.4`, while only the
+analyzed code is 7.4. Installed under `php7.4`, both would resolve 7.x-compatible dependency versions.
 
 ## Run
 
@@ -85,7 +85,7 @@ Needs `php8.4`, `composer`, `git`, `curl`, GNU `time`.
 |------|---------|----------|----------------|
 | [PHPStan](https://phpstan.org/) | 2.3.0 | 2026-10-06 | 7.4 (`php: ^7.4\|^8.0`) |
 | [Mago](https://github.com/carthage-software/mago) | 1.53.0 | 2026-10-08 | none - standalone Rust binary |
-| [ECS](https://github.com/easy-coding-standard/easy-coding-standard) | 13.3.3 | 2026-10-07 | 8.x (`--blink` Go binary is runtime-independent) |
+| [ECS](https://github.com/ecsphp/ecs) | 13.3.3 | 2026-10-07 | 7.2 (`php: >=7.2`; `--blink` Go binary is runtime-independent) |
 | [PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer) | 3.95.27 | 2026-09-22 | 7.4 (`php: ^7.4\|^8.0`) |
 
 Not a scientific benchmark: the tools run different checks and numbers are host-dependent.
